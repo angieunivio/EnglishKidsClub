@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Colores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+    <style>
+        body {
+            background-color: #e3f2fd;
+            font-family: 'Quicksand', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        #quiz-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            text-align: center;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background-color: #0288d1;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 12px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background-color: #0277bd;
+            transform: scale(1.05);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        #score-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .button-container .btn {
+            width: 48%;
+        }
+
+        .correct {
+            background-color: #81c784 !important;
+            border: 2px solid #4caf50;
+        }
+
+        .wrong {
+            background-color: #ef5350 !important;
+            border: 2px solid #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="quiz-container">
+        <h1 id="quiz-title">Cuestionario de Opción Múltiple con Pronunciación: ¡Aprende los colores!</h1>
+        <h2 id="puntaje"></h2>
+        <div id="question-container" class="hide">
+            <div id="question">Pregunta</div>
+            <div id="answer-buttons" class="btn-grid">
+                <button class="btn">Opción 1</button>
+                <button class="btn">Opción 2</button>
+                <button class="btn">Opción 3</button>
+                <button class="btn">Opción 4</button>
+            </div>
+        </div>
+        <button id="start-btn" class="start-btn btn">¡Comenzar el Juego!</button>
+        <button id="next-btn" class="next-btn btn hide">Siguiente</button>
+
+        <div id="score-container" class="hide">
+            <h2 id="score-message"></h2>
+            <h2>Tu Puntuación: <span id="score">0</span>/5</h2>
+            <div class="button-container">
+                <button id="restart-btn" class="restart-btn btn hide">Volver a intentarlo</button>
+                <button id="back-btn" class="back-btn btn"
+                    onclick="window.location.href='principal.html#popular';">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+        import { auth } from './assets/app/firebase.js';
+
+        const db = getDatabase();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                getScoreFromDatabase();
+            } else {
+                console.log('Usuario no autenticado.');
+            }
+        });
+
+        function sanitizeEmail(email) {
+            return email.replace(/\./g, ',');
+        }
+
+        function saveScoreToDatabase(score) {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 5');
+
+                set(scoreRef, { puntuacion: score })
+                    .then(() => {
+                        console.log('Puntuación guardada con éxito.');
+                    })
+                    .catch((error) => {
+                        console.error('Error al guardar la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        function getScoreFromDatabase() {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 5');
+
+                get(scoreRef)
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const data = snapshot.val();
+                            scoreElement.textContent = data.puntuacion;
+                            puntaje.innerText = "Tu puntaje anterios es " + data.puntuacion + "/5";
+                        } else {
+                            puntaje.innerText = "Aún no presentas este quiz";
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error al obtener la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        const puntaje = document.getElementById('puntaje');
+        const startButton = document.getElementById('start-btn');
+        const nextButton = document.getElementById('next-btn');
+        const questionContainerElement = document.getElementById('question-container');
+        const questionElement = document.getElementById('question');
+        const answerButtonsElement = document.getElementById('answer-buttons');
+        const scoreContainer = document.getElementById('score-container');
+        const scoreElement = document.getElementById('score');
+        const scoreMessage = document.getElementById('score-message');
+        const restartButton = document.getElementById('restart-btn');
+
+        let shuffledQuestions, currentQuestionIndex;
+        let score = 0;
+
+        startButton.addEventListener('click', startGame);
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            setNextQuestion();
+        });
+
+        restartButton.addEventListener('click', () => {
+            startGame(); // Reiniciar el juego
+        });
+
+        function startGame() {
+            startButton.classList.add('hide'); // Ocultar el botón de inicio
+            scoreContainer.classList.add('hide');
+            restartButton.classList.add('hide'); // Asegúrate de que el botón esté oculto al inicio
+            document.getElementById('quiz-title').classList.remove('hide'); // Mostrar el título
+            shuffledQuestions = questions.sort(() => Math.random() - .5);
+            currentQuestionIndex = 0;
+            questionContainerElement.classList.remove('hide');
+            score = 0;
+            setNextQuestion();
+            startSpeechRecognition();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            showQuestion(shuffledQuestions[currentQuestionIndex]);
+        }
+
+        function showQuestion(question) {
+            document.getElementById('puntaje').classList.add('hide');
+            questionElement.innerText = question.question;
+            question.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.classList.add('btn');
+                if (answer.correct) {
+                    button.dataset.correct = answer.correct;
+                }
+                button.addEventListener('click', selectAnswer);
+                answerButtonsElement.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            clearStatusClass(document.body);
+            nextButton.classList.add('hide');
+            while (answerButtonsElement.firstChild) {
+                answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const correct = selectedButton.dataset.correct;
+            setStatusClass(document.body, correct);
+
+            Array.from(answerButtonsElement.children).forEach(button => {
+                button.disabled = true;
+                setStatusClass(button, button.dataset.correct);
+            });
+
+            if (correct) {
+                score++;
+            }
+
+            scoreElement.textContent = score;
+
+            if (shuffledQuestions.length > currentQuestionIndex + 1) {
+                nextButton.classList.remove('hide');
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            questionContainerElement.classList.add('hide');
+            scoreContainer.classList.remove('hide');
+            restartButton.classList.remove('hide');
+            document.getElementById('quiz-title').classList.add('hide');
+
+            if (score >= 3) {
+                showConfetti();
+            }
+
+            if (score === 5) {
+                scoreMessage.innerText = "Felicidades! Todas correctas.";
+            } else if (score >= 3) {
+                scoreMessage.innerText = "¡Buen trabajo! Has acertado " + score + "/5";
+            } else {
+                scoreMessage.innerText = "Sigue intentándolo. Has acertado " + score + "/5";
+            }
+
+            saveScoreToDatabase(score);
+        }
+
+        function showConfetti() {
+            var duration = 5 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                });
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+
+        function setStatusClass(element, correct) {
+            clearStatusClass(element);
+            if (correct) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('wrong');
+            }
+        }
+
+        function clearStatusClass(element) {
+            element.classList.remove('correct');
+            element.classList.remove('wrong');
+        }
+
+        const questions = [
+            {
+                question: '¿Cómo se dice "rojo" en inglés?',
+                answers: [
+                    { text: 'Red', correct: true },
+                    { text: 'Green', correct: false },
+                    { text: 'Blue', correct: false },
+                    { text: 'Yellow', correct: false }
+                ]
+            },
+            {
+                question: '¿Cómo se dice "azul" en inglés?',
+                answers: [
+                    { text: 'Red', correct: false },
+                    { text: 'Yellow', correct: false },
+                    { text: 'Green', correct: false },
+                    { text: 'Blue', correct: true }
+                ]
+            },
+            {
+                question: '¿Cómo se dice "verde" en inglés?',
+                answers: [
+                    { text: 'Green', correct: true },
+                    { text: 'Orange', correct: false },
+                    { text: 'Pink', correct: false },
+                    { text: 'Purple', correct: false }
+                ]
+            },
+            {
+                question: '¿Cómo se dice "amarillo" en inglés?',
+                answers: [
+                    { text: 'Yellow', correct: true },
+                    { text: 'White', correct: false },
+                    { text: 'Black', correct: false },
+                    { text: 'Gray', correct: false }
+                ]
+            },
+            {
+                question: '¿Cómo se dice "negro" en inglés?',
+                answers: [
+                    { text: 'Brown', correct: false },
+                    { text: 'Black', correct: true },
+                    { text: 'Blue', correct: false },
+                    { text: 'Red', correct: false }
+                ]
+            }
+        ];
+
+        function startSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            recognition.onresult = function (event) {
+                const lastResult = event.results[event.results.length - 1];
+                const transcript = lastResult[0].transcript.trim().toLowerCase();
+
+                console.log("Respuesta detectada por voz: " + transcript);
+
+                Array.from(answerButtonsElement.children).forEach(button => {
+                    if (button.innerText.toLowerCase() === transcript) {
+                        button.click();
+                    }
+                });
+            };
+
+            recognition.start();
+
+            recognition.onstart = function () {
+                console.log("Reconocimiento de voz iniciado.");
+            };
+
+            recognition.onerror = function (event) {
+                console.log("Error en el reconocimiento de voz: ", event.error);
+            };
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Kids Club</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --body-font: "Poppins", sans-serif;
+            --second-font: "Cherry Bomb One", cursive;
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --header-color: #ffffff;
+            --header-text-color: #2c3e50;
+            --button-color: #2980b9;
+            --button-hover: #1f639a;
+            --quiz-btn-color: #e74c3c;
+            --quiz-btn-hover: #c0392b;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--header-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 50px;
+            margin-right: 10px;
+        }
+
+        h1 {
+            font-family: var(--second-font);
+            color: var(--header-text-color);
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        main {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .content {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background-color: #f7f9fc;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 250px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .audio-btn {
+            display: inline-block;
+            background-color: var(--button-color);
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .audio-btn:hover {
+            background-color: var(--button-hover);
+        }
+
+        .quiz-btn {
+            margin-top: 30px;
+            background-color: var(--quiz-btn-color);
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .quiz-btn:hover {
+            background-color: var(--quiz-btn-hover);
+        }
+
+        p {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="assets/img/logo.png" alt="Logo English Kids Club" class="logo">
+        <h1>English Kids Club</h1>
+    </header>
+    <main>
+        <section class="content">
+            <h1>¡Aprende los Conectores!</h1>
+
+            <div class="card-container">
+                <div class="card">
+                    <h2>Or</h2>
+                    <p>Significa 'o'.</p>
+                    <button class="audio-btn" onclick="speakText('Or')">Escuchar Pronunciación</button>
+                </div>
+                <div class="card">
+                    <h2>Yet</h2>
+                    <p>Significa 'sin embargo'.</p>
+                    <button class="audio-btn" onclick="speakText('Yet')">Escuchar Pronunciación</button>
+                </div>
+                <div class="card">
+                    <h2>Since</h2>
+                    <p>Significa 'ya que'.</p>
+                    <button class="audio-btn" onclick="speakText('Since')">Escuchar Pronunciación</button>
+                </div>
+                <div class="card">
+                    <h2>Unless</h2>
+                    <p>Significa 'a menos que'.</p>
+                    <button class="audio-btn" onclick="speakText('Unless')">Escuchar Pronunciación</button>
+                </div>
+                <div class="card">
+                    <h2>Despite</h2>
+                    <p>Significa 'a pesar de'.</p>
+                    <button class="audio-btn" onclick="speakText('Despite')">Escuchar Pronunciación</button>
+                </div>
+                <div class="card">
+                    <h2>As long as</h2>
+                    <p>Significa 'siempre que'.</p>
+                    <button class="audio-btn" onclick="speakText('As long as')">Escuchar Pronunciación</button>
+                </div>
+            </div>
+            <button class="quiz-btn" onclick="window.location.href='conectores_modulo3.html'">Ver siguiente módulo</button>
+        </section>
+    </main>
+
+    <script>
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+
+</html>

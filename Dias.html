@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Kids Club</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --body-font: "Poppins", sans-serif;
+            --second-font: "Cherry Bomb One", cursive;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 50px;
+            margin-right: 10px;
+        }
+
+        h1 {
+            font-family: var(--second-font);
+            color: #2c3e50;
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .content {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #34495e;
+            margin: 15px 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .welcome-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background-color: #f7f9fc;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 250px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card p {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #2980b9;
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #1f639a;
+        }
+
+        .quiz-btn {
+            margin-top: 30px;
+            background-color: #e74c3c;
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .quiz-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="assets/img/logo.png" alt="Logo Aprender Días" class="logo">
+        <h1>English Kids Club</h1>
+    </header>
+    <main>
+        <section class="content">
+            <h1>¡Bienvenido a aprender los días de la semana!</h1>
+            <p class="welcome-text">Selecciona un módulo para empezar a aprender los días de la semana.</p>
+            <div class="card-container">
+                <div class="card">
+                    <h2>Módulo Básico</h2>
+                    <p>Introducción a los días de la semana a través de un video interactivo.</p>
+                    <a href="dias_modulo1.html" class="button">Comenzar</a>
+                </div>
+                <div class="card">
+                    <h2>Módulo Intermedio</h2>
+                    <p>Aprende el vocabulario de los días de la semana.</p>
+                    <a href="dias_modulo2.html" class="button">Comenzar</a>
+                </div>
+                <div class="card">
+                    <h2>Módulo Avanzado</h2>
+                    <p>Practica las frases en contexto utilizando los días de la semana.</p>
+                    <a href="dias_modulo3.html" class="button">Comenzar</a>
+                </div>
+            </div>
+            <button class="quiz-btn" onclick="window.location.href='principal.html'">Presentar otra clase</button>
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Verbo To Be</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+    <style>
+        body {
+            background-color: #e3f2fd;
+            font-family: 'Quicksand', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        #quiz-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            text-align: center;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background-color: #0288d1;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 12px;
+            width: 100%;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background-color: #0277bd;
+            transform: scale(1.05);
+        }
+
+        .hide {
+            display: none;
+        }
+
+        #score-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .draggable {
+            background-color: #81c784;
+            border: 2px solid #4caf50;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px;
+            cursor: grab;
+        }
+
+        .dropzone {
+            border: 2px dashed #0288d1;
+            border-radius: 10px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .correct {
+            background-color: #81c784 !important;
+            border: 2px solid #4caf50;
+        }
+
+        .wrong {
+            background-color: #ef5350 !important;
+            border: 2px solid #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="quiz-container">
+        <h1 id="quiz-title">¡Aprende el Verbo "To Be"!</h1>
+        <h2 id="puntaje"></h2>
+        <button id="start-btn" class="btn">¡Comenzar el Juego!</button>
+        <div id="question-container" class="hide">
+            <h2 id="question-text"></h2>
+            <div id="dropzone" class="dropzone">Arrastra tu respuesta aquí</div>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="score-container" class="hide">
+            <h2 id="score-message"></h2>
+            <h2>Tu Puntuación: <span id="score">0</span>/5</h2>
+            <div class="button-container">
+                <button id="restart-btn" class="btn" onclick="window.location.href='quiz3.html';">Volver a
+                    intentarlo</button>
+                <button id="return-btn" class="btn"
+                    onclick="window.location.href='principal.html#popular';">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+        import { auth } from './assets/app/firebase.js';
+
+        const db = getDatabase();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                getScoreFromDatabase();
+            } else {
+                console.log('Usuario no autenticado.');
+            }
+        });
+
+        function sanitizeEmail(email) {
+            return email.replace(/\./g, ',');
+        }
+
+        function saveScoreToDatabase(score) {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 7');
+
+                set(scoreRef, { puntuacion: score })
+                    .then(() => {
+                        console.log('Puntuación guardada con éxito.');
+                    })
+                    .catch((error) => {
+                        console.error('Error al guardar la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        function getScoreFromDatabase() {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 7');
+
+                get(scoreRef)
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const data = snapshot.val();
+                            scoreElement.textContent = data.puntuacion;
+                            puntaje.innerText = "Tu puntaje anterios es " + data.puntuacion + "/5";
+                        } else {
+                            puntaje.innerText = "Aún no presentas este quiz";
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error al obtener la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        const puntaje = document.getElementById('puntaje');
+        const startButton = document.getElementById('start-btn');
+        const questionContainerElement = document.getElementById('question-container');
+        const questionText = document.getElementById('question-text');
+        const dropzone = document.getElementById('dropzone');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreContainer = document.getElementById('score-container');
+        const scoreElement = document.getElementById('score');
+        const scoreMessage = document.getElementById('score-message');
+        const restartButton = document.getElementById('restart-btn');
+        const quizTitle = document.getElementById('quiz-title');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questions = [
+            { question: '¿Cómo se usa el verbo "To Be" para "He"?', correct: "Is", options: ["Am", "Is", "Are", "Be"] },
+            { question: '¿Cómo se usa el verbo "To Be" para "They"?', correct: "Are", options: ["Am", "Is", "Are", "Be"] },
+            { question: '¿Cuál es la forma correcta de "To Be" para "I"?', correct: "Am", options: ["Am", "Is", "Are", "Be"] },
+            { question: '¿Cómo se usa el verbo "To Be" para "We"?', correct: "Are", options: ["Am", "Is", "Are", "Be"] },
+            { question: '¿Cuál es la forma de "To Be" para "You"?', correct: "Are", options: ["Am", "Is", "Are", "Be"] }
+        ];
+
+        startButton.addEventListener('click', startGame);
+
+        function startGame() {
+            startButton.classList.add('hide');
+            scoreContainer.classList.add('hide');
+            questionContainerElement.classList.remove('hide');
+            quizTitle.classList.remove('hide');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            document.getElementById('puntaje').classList.add('hide');
+            const currentQuestion = questions[currentQuestionIndex];
+            questionText.innerText = currentQuestion.question;
+            dropzone.classList.remove('correct', 'wrong');
+            optionsContainer.innerHTML = '';
+
+            const shuffledOptions = shuffle(currentQuestion.options);
+            shuffledOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.innerText = option;
+                optionElement.classList.add('draggable');
+                optionElement.setAttribute('draggable', true);
+                optionElement.addEventListener('dragstart', dragStart);
+                optionsContainer.appendChild(optionElement);
+            });
+
+            dropzone.addEventListener('dragover', dragOver);
+            dropzone.addEventListener('drop', drop);
+        }
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function dragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.innerText);
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const droppedValue = event.dataTransfer.getData('text/plain');
+            const currentQuestion = questions[currentQuestionIndex];
+
+            if (droppedValue === currentQuestion.correct) {
+                score++;
+                dropzone.classList.add('correct');
+            } else {
+                dropzone.classList.add('wrong');
+            }
+
+            scoreElement.textContent = score;
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                setTimeout(loadQuestion, 1000);
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            questionContainerElement.classList.add('hide');
+            scoreContainer.classList.remove('hide');
+            startButton.classList.add('hide');
+            document.getElementById('quiz-title').classList.add('hide');
+
+            if (score >= 3) {
+                showConfetti();
+            }
+
+            if (score === 5) {
+                scoreMessage.innerText = "Felicidades! Todas correctas.";
+            } else if (score >= 3) {
+                scoreMessage.innerText = "¡Buen trabajo! Has acertado " + score + "/5";
+            } else {
+                scoreMessage.innerText = "Sigue intentándolo. Has acertado " + score + "/5";
+            }
+
+            saveScoreToDatabase(score);
+        }
+
+        function showConfetti() {
+            var duration = 5 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                });
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+    </script>
+</body>
+
+</html>

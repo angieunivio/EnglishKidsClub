@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Adverbios de Frecuencia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+    <style>
+        body {
+            background-color: #e3f2fd;
+            font-family: 'Quicksand', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        #quiz-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background-color: #0288d1;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 12px;
+            width: 100%;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background-color: #0277bd;
+            transform: scale(1.05);
+        }
+
+        .hide {
+            display: none;
+        }
+
+        #score-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 2px solid #0288d1;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="quiz-container">
+        <h1 id="quiz-title">Escribe la Traducción en Inglés</h1>
+        <h2 id="puntaje"></h2>
+        <div id="question-container" class="hide"></div>
+        <input type="text" id="answer-input" class="input-field hide" placeholder="Escribe la traducción aquí">
+        <button id="submit-btn" class="btn hide">Enviar Respuesta</button>
+        <button id="start-btn" class="btn">¡Comenzar el Juego!</button>
+
+        <!-- Contenedor para mostrar la puntuación y mensaje final -->
+        <div id="score-container" class="hide">
+            <h2 id="score-message"></h2>
+            <h3>Tu Puntuación: <span id="score">0</span>/5</h3>
+            <h3>Fallas: <span id="errors">0</span></h3>
+            <button id="restart-btn" class="btn" onclick="window.location.reload();">Volver a intentarlo</button>
+            <button id="main-menu-btn" class="btn"
+                onclick="window.location.href='principal.html#popular';">Volver</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+        import { auth } from './assets/app/firebase.js';
+
+        const db = getDatabase();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                getScoreFromDatabase();
+            } else {
+                console.log('Usuario no autenticado.');
+            }
+        });
+
+        function sanitizeEmail(email) {
+            return email.replace(/\./g, ',');
+        }
+
+        function saveScoreToDatabase(score) {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 9');
+
+                set(scoreRef, { puntuacion: score })
+                    .then(() => {
+                        console.log('Puntuación guardada con éxito.');
+                    })
+                    .catch((error) => {
+                        console.error('Error al guardar la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        function getScoreFromDatabase() {
+            const user = auth.currentUser;
+            if (user) {
+                const userId = sanitizeEmail(user.email);
+                const scoreRef = ref(db, 'Puntuación/' + userId + '/Quiz 9');
+
+                get(scoreRef)
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const data = snapshot.val();
+                            scoreElement.textContent = data.puntuacion;
+                            puntaje.innerText = "Tu puntaje anterios es " + data.puntuacion + "/5";
+                        } else {
+                            puntaje.innerText = "Aún no presentas este quiz";
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error al obtener la puntuación: ', error);
+                    });
+            } else {
+                console.error('Usuario no autenticado.');
+            }
+        }
+
+        const puntaje = document.getElementById('puntaje');
+        const startButton = document.getElementById('start-btn');
+        const questionContainer = document.getElementById('question-container');
+        const answerInput = document.getElementById('answer-input');
+        const submitButton = document.getElementById('submit-btn');
+        const scoreContainer = document.getElementById('score-container');
+        const scoreElement = document.getElementById('score');
+        const scoreMessage = document.getElementById('score-message');
+        const errorsElement = document.getElementById('errors');
+
+        const adverbs = [
+            { english: 'always', spanish: 'siempre' },
+            { english: 'usually', spanish: 'usualmente' },
+            { english: 'sometimes', spanish: 'a veces' },
+            { english: 'rarely', spanish: 'raramente' },
+            { english: 'never', spanish: 'nunca' }
+        ];
+
+        let currentAdverbIndex = 0;
+        let score = 0;
+        let errors = 0;
+
+        startButton.addEventListener('click', startGame);
+        submitButton.addEventListener('click', checkAnswer);
+
+        function startGame() {
+            startButton.classList.add('hide');
+            questionContainer.classList.remove('hide');
+            answerInput.classList.remove('hide');
+            submitButton.classList.remove('hide');
+            document.getElementById('quiz-title').classList.remove('hide');
+            resetGame();
+            showNextQuestion();
+        }
+
+        function showNextQuestion() {
+            document.getElementById('puntaje').classList.add('hide');
+            if (currentAdverbIndex < adverbs.length) {
+                const currentAdverb = adverbs[currentAdverbIndex];
+                questionContainer.textContent = `¿Cómo se dice "${currentAdverb.spanish}" en inglés?`;
+            } else {
+                endGame();
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = adverbs[currentAdverbIndex].english;
+
+            if (userAnswer === correctAnswer) {
+                score++;
+            } else {
+                errors++;
+            }
+
+            currentAdverbIndex++;
+            updateScore();
+            answerInput.value = ''; // Limpiar el campo de entrada
+            showNextQuestion();
+        }
+
+        function updateScore() {
+            scoreElement.textContent = score;
+            errorsElement.textContent = errors;
+        }
+
+        function endGame() {
+            questionContainer.classList.add('hide');
+            answerInput.classList.add('hide');
+            submitButton.classList.add('hide');
+            scoreContainer.classList.remove('hide');
+            document.getElementById('quiz-title').classList.add('hide');
+
+            if (score >= 3) {
+                showConfetti();
+            }
+
+            if (score === 5) {
+                scoreMessage.innerText = "Felicidades! Todas correctas.";
+            } else if (score >= 3) {
+                scoreMessage.innerText = "¡Buen trabajo! Has acertado " + score + "/5";
+            } else {
+                scoreMessage.innerText = "Sigue intentándolo. Has acertado " + score + "/5";
+            }
+
+            saveScoreToDatabase(score);
+        }
+
+        function showConfetti() {
+            var duration = 5 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                });
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+
+        function resetGame() {
+            currentAdverbIndex = 0;
+            score = 0;
+            errors = 0;
+            scoreElement.textContent = score;
+            errorsElement.textContent = errors;
+            questionContainer.innerHTML = '';
+        }
+    </script>
+</body>
+
+</html>
